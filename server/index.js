@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
+import quizRoutes from "./routes/quizRoutes.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(
 );
 
 app.use("/api/auth", authRoutes);
+app.use("/api/quiz", quizRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)
