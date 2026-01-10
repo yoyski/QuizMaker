@@ -11,7 +11,7 @@ export const useAuthStore = create((set) => ({
   },
 
   login: async (email, password) => {
-    const res = await axios.post("api/auth/login", { email, password }, { withCredentials: true });
+    const res = await axios.post("/api/auth/login", { email, password }, { withCredentials: true });
     set({ user: res.data.user, isAuthenticated: true });
   },
 

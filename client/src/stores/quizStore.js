@@ -91,4 +91,17 @@ export const useQuizStore = create((set, get) => ({
       throw err;
     }
   },
+
+  deleteQuiz: async (quizId) => {
+    set({ loading: true });
+    try {
+      await axios.delete(`/api/quiz/${quizId}`, {
+        withCredentials: true,
+      });
+      const updatedQuizzes = get().quizzes.filter((quiz) => quiz._id !== quizId);
+      set({ quizzes: updatedQuizzes, loading: false });
+    } catch (error) {
+      console.error("Failed to delete quiz:", error);
+    }
+  }
 }));

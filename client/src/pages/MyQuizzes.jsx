@@ -17,6 +17,7 @@ const MyQuizzes = () => {
   const logout = useAuthStore((state) => state.logout);
   const quizzes = useQuizStore((state) => state.quizzes);
   const getMyQuizzes = useQuizStore((state) => state.getMyQuizzes);
+  const deleteQuiz = useQuizStore((state) => state.deleteQuiz);
   const loading = useQuizStore((state) => state.loading);
 
   const navigate = useNavigate();
@@ -24,6 +25,16 @@ const MyQuizzes = () => {
   useEffect(() => {
     getMyQuizzes();
   }, [getMyQuizzes]);
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this quiz?"
+    );
+
+    if (!confirmed) return;
+
+    await deleteQuiz(id);
+  };
 
   return (
     <div className="px-1 md:px-10 lg:px-25 py-15 bg-[#e3e7e9] min-h-screen">
@@ -114,8 +125,7 @@ const MyQuizzes = () => {
                 </p>
 
                 <p className="text-gray-600 text-sm">
-                  Created on:{" "}
-                  {new Date(quiz.createdAt).toLocaleDateString()}
+                  Created on: {new Date(quiz.createdAt).toLocaleDateString()}
                 </p>
               </div>
 
@@ -123,9 +133,7 @@ const MyQuizzes = () => {
               <div className="flex items-center bg-[#e3e7e9] p-3 text-lg text-[#74777e] justify-end">
                 <div className="flex space-x-4">
                   <button
-                    onClick={() =>
-                      navigate(`/CreateQuizForm/${quiz._id}`)
-                    }
+                    onClick={() => navigate(`/CreateQuizForm/${quiz._id}`)}
                     className="hover:text-blue-600"
                   >
                     <FaEdit />
@@ -135,7 +143,10 @@ const MyQuizzes = () => {
                     <FaPlay />
                   </button>
 
-                  <button className="hover:text-red-600">
+                  <button
+                    onClick={() => handleDelete(quiz._id)}
+                    className="hover:text-red-600"
+                  >
                     <FaTrash />
                   </button>
                 </div>

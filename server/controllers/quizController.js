@@ -128,3 +128,13 @@ export const getQuizById = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch quiz" });
   }
 };
+
+export const deleteQuiz = async (req, res) => {
+  try {
+    const todo = await Quiz.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    if (!todo) return res.status(404).json({ message: "Quiz not found" });
+    res.json({ message: "Quiz deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}

@@ -1,5 +1,5 @@
 import express from "express";
-import { createQuiz, getMyQuizzes, getAllQuizzes, getQuizById,updateQuiz } from "../controllers/quizController.js";
+import { createQuiz, getMyQuizzes, getAllQuizzes, getQuizById,updateQuiz, deleteQuiz } from "../controllers/quizController.js";
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -9,5 +9,6 @@ router.get("/my", protect, getMyQuizzes);
 router.get("/:id", protect, getQuizById);
 router.put("/:id", protect, updateQuiz);
 router.get("/", getAllQuizzes);
+router.delete("/:id", protect, deleteQuiz);
 
 export default router;
