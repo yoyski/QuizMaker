@@ -1,179 +1,308 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuizStore } from "@/stores/quizStore";
+import { FaTrash, FaEllipsisV, FaTimes, FaBars } from "react-icons/fa";
 
 const CreateQuizForm = () => {
+  const { quizId } = useParams();
+  const isEditMode = Boolean(quizId);
+
+  const navigate = useNavigate();
+  const createQuiz = useQuizStore((state) => state.createQuiz);
+  const updateQuiz = useQuizStore((state) => state.updateQuiz);
+  const fetchQuizById = useQuizStore((state) => state.fetchQuizById);
+
+  const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("Untitled Quiz");
+  const [visibility, setVisibility] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // small device toggle
+
   const [questions, setQuestions] = useState([
     { text: "", options: ["", ""], correctIndex: null },
   ]);
   const [selectedQuestion, setSelectedQuestion] = useState(0);
 
+  /* LOAD QUIZ DATA FOR EDIT MODE */
+  useEffect(() => {
+    if (isEditMode) {
+      setLoading(true);
+      fetchQuizById(quizId)
+        .then((quiz) => {
+          setTitle(quiz.title);
+          setQuestions(quiz.questions);
+          setVisibility(Boolean(quiz.visibility));
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [quizId, isEditMode, fetchQuizById]);
+
+  /* QUESTION HANDLERS */
   const handleQuestionChange = (index, value) => {
-    const updated = [...questions];
-    updated[index].text = value;
-    setQuestions(updated);
+    setQuestions((prev) =>
+      prev.map((q, i) => (i === index ? { ...q, text: value } : q))
+    );
   };
 
   const handleOptionChange = (qIndex, oIndex, value) => {
-    const updated = [...questions];
-    updated[qIndex].options[oIndex] = value;
-    setQuestions(updated);
-  };
-
-  const addOption = (qIndex) => {
-    const updated = [...questions];
-    updated[qIndex].options.push("");
-    setQuestions(updated);
-  };
-
-  const removeOption = (qIndex, oIndex) => {
-    const updated = [...questions];
-    if (updated[qIndex].options.length <= 2) return;
-
-    updated[qIndex].options.splice(oIndex, 1);
-
-    if (updated[qIndex].correctIndex === oIndex) updated[qIndex].correctIndex = null;
-    else if (updated[qIndex].correctIndex > oIndex) updated[qIndex].correctIndex -= 1;
-
-    setQuestions(updated);
+    setQuestions((prev) =>
+      prev.map((q, i) =>
+        i === qIndex
+          ? {
+              ...q,
+              options: q.options.map((opt, j) => (j === oIndex ? value : opt)),
+            }
+          : q
+      )
+    );
   };
 
   const setCorrectOption = (qIndex, oIndex) => {
-    const updated = [...questions];
-    updated[qIndex].correctIndex = oIndex;
-    setQuestions(updated);
+    setQuestions((prev) =>
+      prev.map((q, i) => (i === qIndex ? { ...q, correctIndex: oIndex } : q))
+    );
+  };
+
+  const addOption = (qIndex) => {
+    setQuestions((prev) =>
+      prev.map((q, i) =>
+        i === qIndex ? { ...q, options: [...q.options, ""] } : q
+      )
+    );
   };
 
   const addQuestion = () => {
-    setQuestions([...questions, { text: "", options: ["", ""], correctIndex: null }]);
+    setQuestions((prev) => [
+      ...prev,
+      { text: "", options: ["", ""], correctIndex: null },
+    ]);
     setSelectedQuestion(questions.length);
   };
 
   const deleteQuestion = (index) => {
-    if (questions.length === 1) return; // Prevent deleting the last question
+    if (questions.length === 1) return;
+    setQuestions((prev) => prev.filter((_, i) => i !== index));
+    setSelectedQuestion(0);
+  };
 
-    const updated = questions.filter((_, i) => i !== index);
-    setQuestions(updated);
+  /* SUBMIT */
+  const handleSubmit = async () => {
+    if (!title.trim()) {
+      alert("Quiz title is required");
+      return;
+    }
+    if (questions.some((q) => !q.text.trim())) {
+      alert("All questions must have text");
+      return;
+    }
+    if (questions.some((q) => q.correctIndex === null)) {
+      alert("Each question must have a correct answer");
+      return;
+    }
 
-    if (selectedQuestion === index) setSelectedQuestion(0);
-    else if (selectedQuestion > index) setSelectedQuestion(selectedQuestion - 1);
+    try {
+      if (isEditMode) {
+        await updateQuiz(quizId, title, questions, visibility);
+      } else {
+        await createQuiz(title, questions, visibility);
+      }
+      navigate("/MyQuizzes");
+    } catch (error) {
+      alert("Failed to save quiz", error);
+    }
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* SIDEBAR */}
-      <aside className="hidden sm:flex w-72 flex-col border-r bg-gray-50">
-        <div className="flex items-center justify-between px-4 py-3 border-b">
-          <h2 className="font-semibold text-gray-700">Quiz Questions</h2>
-          <button className="text-gray-400 hover:text-gray-600">⋯</button>
-        </div>
+      {/* TOGGLE BUTTON FOR SMALL SCREENS */}
+      {!sidebarOpen && (
+        <button
+          className="sm:hidden fixed top-4 left-4 z-20 p-2 bg-white rounded shadow"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <FaBars />
+        </button>
+      )}
 
-        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
-          {questions.map((q, i) => (
-            <div
-              key={i}
-              className={`flex justify-between items-center rounded-md px-3 py-2 cursor-pointer ${
-                selectedQuestion === i ? "bg-blue-50 border border-blue-200" : "hover:bg-gray-100"
-              }`}
+      {/* SIDEBAR */}
+      <aside
+        className={`
+          fixed z-10 top-0 left-0 h-full w-72 bg-gray-50 border-r transform
+          transition-transform duration-300
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+          sm:relative sm:translate-x-0 sm:flex flex-col
+        `}
+      >
+        {/* HEADER */}
+        <div className="px-4 py-3 border-b flex items-center justify-between font-semibold relative">
+          <span>Quiz Questions</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowMenu((prev) => !prev)}
+              className="p-2 rounded hover:bg-gray-200"
             >
-              <div onClick={() => setSelectedQuestion(i)}>
-                <p className="text-sm font-medium text-gray-700">
-                  {q.text || `Question ${i + 1}`}
-                </p>
-                <p className="text-xs text-gray-500">{`Question ${i + 1}`}</p>
-              </div>
+              <FaEllipsisV />
+            </button>
+            {/* BACK BUTTON ONLY FOR SMALL DEVICES */}
+            <button
+              className="sm:hidden p-2 rounded hover:bg-gray-200"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          {showMenu && (
+            <div className="absolute right-3 top-12 bg-white border rounded shadow w-40 z-20">
               <button
-                onClick={() => deleteQuestion(i)}
-                className="text-red-500 hover:text-red-700 text-sm"
-                title="Delete Question"
+                onClick={() => {
+                  setVisibility(true);
+                  setShowMenu(false);
+                }}
+                className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
+                  visibility === true && "font-semibold text-blue-600"
+                }`}
               >
-                🗑️
+                🌍 Public
+              </button>
+
+              <button
+                onClick={() => {
+                  setVisibility(false);
+                  setShowMenu(false);
+                }}
+                className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
+                  visibility === false && "font-semibold text-blue-600"
+                }`}
+              >
+                🔒 Private
               </button>
             </div>
-          ))}
+          )}
         </div>
 
-        <div className="p-3 border-t">
-          <button
-            onClick={addQuestion}
-            className="w-full rounded-md border border-dashed border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-100"
-          >
-            + Add Question
-          </button>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT */}
-      <main className="flex-1 overflow-y-auto p-6">
-        <div className="flex items-center justify-between mb-6">
-          {/* Editable Quiz Title */}
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="text-2xl font-bold text-gray-800 border-b border-gray-300 focus:ring-2 focus:ring-blue-500 px-1 py-1 rounded"
-          />
-
-          <button className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700">
-            Save Quiz
-          </button>
-        </div>
-
-        {questions[selectedQuestion] && (
-          <div className="max-w-3xl rounded-lg bg-white p-6 shadow-sm border">
-            <input
-              type="text"
-              placeholder="Enter your question"
-              value={questions[selectedQuestion].text}
-              onChange={(e) => handleQuestionChange(selectedQuestion, e.target.value)}
-              className="w-full mb-5 rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500"
-            />
-
-            <div className="space-y-3">
-              {questions[selectedQuestion].options.map((opt, i) => (
+        {/* QUESTIONS LIST / SKELETON */}
+        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+          {loading
+            ? [...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className={`flex items-center gap-2 rounded-md border p-2 ${
-                    questions[selectedQuestion].correctIndex === i
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200"
+                  className="h-12 bg-gray-300 rounded animate-pulse"
+                />
+              ))
+            : questions.map((q, i) => (
+                <div
+                  key={i}
+                  onClick={() => {
+                    setSelectedQuestion(i);
+                    setSidebarOpen(false); // close sidebar on selection for small screens
+                  }}
+                  className={`p-2 rounded cursor-pointer relative ${
+                    selectedQuestion === i ? "bg-blue-100" : "hover:bg-gray-100"
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="correctOption"
-                    checked={questions[selectedQuestion].correctIndex === i}
-                    onChange={() => setCorrectOption(selectedQuestion, i)}
-                  />
-                  <input
-                    type="text"
-                    placeholder={`Option ${i + 1}`}
-                    value={opt}
-                    onChange={(e) => handleOptionChange(selectedQuestion, i, e.target.value)}
-                    className="flex-1 rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                  />
+                  <div className="w-50 truncate">
+                    {q.text || `Question ${i + 1}`}
+                  </div>
+                  <div className="text-xs text-gray-500">Question {i + 1}</div>
+
                   <button
-                    onClick={() => removeOption(selectedQuestion, i)}
-                    disabled={questions[selectedQuestion].options.length <= 2}
-                    className={`px-2 text-sm ${
-                      questions[selectedQuestion].options.length <= 2
-                        ? "text-gray-300 cursor-not-allowed"
-                        : "text-red-500 hover:text-red-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteQuestion(i);
+                    }}
+                    disabled={questions.length === 1}
+                    className={`absolute top-3 right-3 p-2 rounded ${
+                      questions.length === 1
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-red-600 hover:bg-red-100"
                     }`}
-                    title="Remove option"
                   >
-                    🗑️
+                    <FaTrash />
                   </button>
                 </div>
               ))}
-            </div>
+        </div>
 
+        {/* ADD QUESTION */}
+        {!loading && (
+          <div className="p-3 border-t">
             <button
-              onClick={() => addOption(selectedQuestion)}
-              className="mt-4 text-sm text-blue-600 hover:underline"
+              onClick={addQuestion}
+              className="w-full border border-dashed py-2 text-sm"
             >
-              + Add option
+              + Add Question
             </button>
           </div>
+        )}
+      </aside>
+
+      {/* MAIN */}
+      <main className="flex-1 p-6 overflow-y-auto">
+        {loading ? (
+          <div className="space-y-4">
+            <div className="h-8 w-1/2 bg-gray-300 rounded animate-pulse"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-300 rounded w-full animate-pulse"></div>
+              <div className="h-4 bg-gray-300 rounded w-full animate-pulse"></div>
+              <div className="h-4 bg-gray-300 rounded w-5/6 animate-pulse"></div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 p-3 rounded">
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full sm:flex-1 text-2xl font-bold border-b bg-transparent outline-none p-2"
+                placeholder="Enter quiz title"
+              />
+
+              <button
+                onClick={handleSubmit}
+                className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                {isEditMode ? "Update Quiz" : "Save Quiz"}
+              </button>
+            </div>
+
+            {questions[selectedQuestion] && (
+              <div className="bg-white p-6 rounded shadow">
+                <input
+                  value={questions[selectedQuestion].text}
+                  onChange={(e) =>
+                    handleQuestionChange(selectedQuestion, e.target.value)
+                  }
+                  className="w-full mb-4 border p-2"
+                  placeholder="Question text"
+                />
+
+                {questions[selectedQuestion].options.map((opt, i) => (
+                  <div key={i} className="flex items-center gap-2 mb-2">
+                    <input
+                      type="radio"
+                      checked={questions[selectedQuestion].correctIndex === i}
+                      onChange={() => setCorrectOption(selectedQuestion, i)}
+                    />
+                    <input
+                      value={opt}
+                      onChange={(e) =>
+                        handleOptionChange(selectedQuestion, i, e.target.value)
+                      }
+                      className="flex-1 border p-2"
+                    />
+                  </div>
+                ))}
+
+                <button
+                  onClick={() => addOption(selectedQuestion)}
+                  className="text-sm text-blue-600 mt-2"
+                >
+                  + Add option
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

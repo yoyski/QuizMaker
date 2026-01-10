@@ -1,36 +1,34 @@
 import { useAuthStore } from "../stores/authStore";
-import { FaEdit, FaPlay, FaTrash, FaPlus, FaSearch, FaGlobe, FaLock } from "react-icons/fa";
+import { useQuizStore } from "@/stores/quizStore";
+import {
+  FaEdit,
+  FaPlay,
+  FaTrash,
+  FaPlus,
+  FaSearch,
+  FaGlobe,
+  FaLock,
+} from "react-icons/fa";
 import { Button } from "../components/ui/Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const MyQuizzes = () => {
   const logout = useAuthStore((state) => state.logout);
+  const quizzes = useQuizStore((state) => state.quizzes);
+  const getMyQuizzes = useQuizStore((state) => state.getMyQuizzes);
+  const loading = useQuizStore((state) => state.loading);
 
-  const items = [
-    {
-      title: "Literature Test",
-      noOfQuestions: "12 Questions",
-      created: "2023-05-05",
-      isPublished: true,
-    },
-    {
-      title: "Math Quiz",
-      noOfQuestions: "8 Questions",
-      created: "2023-06-01",
-      isPublished: false,
-    },
-    {
-      title: "Science Exam",
-      noOfQuestions: "15 Questions",
-      created: "2023-06-10",
-      isPublished: false,
-    },
-  ]; // later this comes from database
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getMyQuizzes();
+  }, [getMyQuizzes]);
 
   return (
-    <div className="px-1 md:px-10 lg:px-25 py-15 bg-[#e3e7e9] h-full min-h-screen">
+    <div className="px-1 md:px-10 lg:px-25 py-15 bg-[#e3e7e9] min-h-screen">
       {/* HEADER */}
-      <div className="col-span-6 p-4 flex justify-between items-center">
+      <div className="p-4 flex justify-between items-center">
         <div className="font-bold text-xl">My Quizzes</div>
         <Link to="/CreateQuizForm">
           <Button>
@@ -45,7 +43,7 @@ const MyQuizzes = () => {
 
       {/* SEARCH */}
       <div className="p-3">
-        <div className="flex items-center w-full bg-white rounded-md px-3 py-2 shadow-sm">
+        <div className="flex items-center bg-white rounded-md px-3 py-2 shadow-sm">
           <FaSearch className="text-gray-400 mr-2" />
           <input
             type="text"
@@ -55,61 +53,103 @@ const MyQuizzes = () => {
         </div>
       </div>
 
-      {/* QUIZ GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-3">
-        {items.map((item, i) => (
-          <div key={i} className="bg-gray-100 rounded-lg shadow-md overflow-hidden">
-            {/* CARD BODY */}
-            <div className="px-4 py-4">
-              <div className="flex justify-between items-start">
-                <h2 className="text-lg font-semibold mb-2">{item.title}</h2>
+      {/* QUIZ GRID / SKELETON */}
+      {loading ? (
+        /* 🔹 SKELETON GRID */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-3">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-gray-100 rounded-lg shadow-md overflow-hidden animate-pulse"
+            >
+              {/* CARD BODY */}
+              <div className="px-4 py-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="h-5 w-40 bg-gray-300 rounded" />
+                  <div className="h-5 w-20 bg-gray-300 rounded-full" />
+                </div>
 
-                {/* PUBLISH STATUS BADGE */}
-                <span
-                  className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
-                    item.isPublished
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  {item.isPublished ? <FaGlobe /> : <FaLock />}
-                  {item.isPublished ? "Public" : "Private"}
-                </span>
+                <div className="h-4 w-28 bg-gray-300 rounded mb-2" />
+                <div className="h-3 w-36 bg-gray-200 rounded" />
               </div>
 
-              <p className="text-gray-600 mb-1">{item.noOfQuestions}</p>
-              <p className="text-gray-600 text-sm">
-                Created on: {item.created}
-              </p>
-            </div>
-
-            {/* ACTION BAR */}
-            <div className="text-[#74777e] text-lg space-x-4 flex justify-between items-center bg-[#e3e7e9] p-3">
-              {/* PUBLISH TOGGLE (UI ONLY) */}
-              <button
-                className="text-sm flex items-center gap-1 hover:text-blue-600"
-                title="Toggle Publish"
-              >
-                {item.isPublished ? <FaLock /> : <FaGlobe />}
-                {item.isPublished ? "Unpublish" : "Publish"}
-              </button>
-
-              {/* ACTION ICONS */}
-              <div className="flex space-x-4">
-                <button className="hover:text-blue-600" title="Edit">
-                  <FaEdit />
-                </button>
-                <button className="hover:text-blue-600" title="Play">
-                  <FaPlay />
-                </button>
-                <button className="hover:text-red-600" title="Delete">
-                  <FaTrash />
-                </button>
+              {/* ACTION BAR */}
+              <div className="flex justify-end bg-[#e3e7e9] p-3">
+                <div className="flex space-x-4">
+                  <div className="h-5 w-5 bg-gray-300 rounded" />
+                  <div className="h-5 w-5 bg-gray-300 rounded" />
+                  <div className="h-5 w-5 bg-gray-300 rounded" />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* 🔹 REAL QUIZZES */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-3">
+          {quizzes.map((quiz) => (
+            <div
+              key={quiz._id}
+              className="bg-gray-100 rounded-lg shadow-md overflow-hidden"
+            >
+              {/* CARD BODY */}
+              <div className="px-4 py-4">
+                <div className="flex justify-between items-start">
+                  <h2 className="text-lg font-semibold">{quiz.title}</h2>
+
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
+                      quiz.isPublished
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {quiz.isPublished ? <FaGlobe /> : <FaLock />}
+                    {quiz.isPublished ? "Public" : "Private"}
+                  </span>
+                </div>
+
+                <p className="text-gray-600 mt-1">
+                  {quiz.questions?.length ?? 0} Questions
+                </p>
+
+                <p className="text-gray-600 text-sm">
+                  Created on:{" "}
+                  {new Date(quiz.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+
+              {/* ACTION BAR */}
+              <div className="flex items-center bg-[#e3e7e9] p-3 text-lg text-[#74777e] justify-end">
+                <div className="flex space-x-4">
+                  <button
+                    onClick={() =>
+                      navigate(`/CreateQuizForm/${quiz._id}`)
+                    }
+                    className="hover:text-blue-600"
+                  >
+                    <FaEdit />
+                  </button>
+
+                  <button className="hover:text-blue-600">
+                    <FaPlay />
+                  </button>
+
+                  <button className="hover:text-red-600">
+                    <FaTrash />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {quizzes.length === 0 && (
+            <p className="col-span-full text-center text-gray-500">
+              No quizzes found.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

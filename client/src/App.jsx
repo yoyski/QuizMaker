@@ -28,11 +28,12 @@ function App() {
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
-          <Route path="MyQuizzes" element={<MyQuizzes />} />
-          <Route path="Favorite" element={<Favorite />} />
+          <Route path="/MyQuizzes" element={<MyQuizzes />} />
+          <Route path="/Favorite" element={<Favorite />} />
         </Route>
         <Route path="/AuthPage" element={<AuthPage />} />
-        <Route path="CreateQuizForm" element={<CreateQuizForm />} />
+        <Route path="/CreateQuizForm" element={<CreateQuizForm />} />
+        <Route path="/CreateQuizForm/:quizId" element={<CreateQuizForm />} />
       </Routes>
     </>
   )
