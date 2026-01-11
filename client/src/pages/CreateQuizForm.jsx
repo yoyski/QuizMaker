@@ -11,10 +11,9 @@ const CreateQuizForm = () => {
   const createQuiz = useQuizStore((state) => state.createQuiz);
   const updateQuiz = useQuizStore((state) => state.updateQuiz);
   const fetchQuizById = useQuizStore((state) => state.fetchQuizById);
-
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("Untitled Quiz");
-  const [visibility, setVisibility] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // small device toggle
 
@@ -31,7 +30,7 @@ const CreateQuizForm = () => {
         .then((quiz) => {
           setTitle(quiz.title);
           setQuestions(quiz.questions);
-          setVisibility(Boolean(quiz.visibility));
+          setIsPublished(Boolean(quiz.isPublished));
         })
         .finally(() => setLoading(false));
     }
@@ -102,9 +101,9 @@ const CreateQuizForm = () => {
 
     try {
       if (isEditMode) {
-        await updateQuiz(quizId, title, questions, visibility);
+        await updateQuiz(quizId, title, questions, isPublished);
       } else {
-        await createQuiz(title, questions, visibility);
+        await createQuiz(title, questions, isPublished);
       }
       navigate("/MyQuizzes");
     } catch (error) {
@@ -156,11 +155,11 @@ const CreateQuizForm = () => {
             <div className="absolute right-3 top-12 bg-white border rounded shadow w-40 z-20">
               <button
                 onClick={() => {
-                  setVisibility(true);
+                  setIsPublished(true);
                   setShowMenu(false);
                 }}
                 className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                  visibility === true && "font-semibold text-blue-600"
+                  isPublished === true && "font-semibold text-blue-600"
                 }`}
               >
                 🌍 Public
@@ -168,11 +167,11 @@ const CreateQuizForm = () => {
 
               <button
                 onClick={() => {
-                  setVisibility(false);
+                  setIsPublished(false);
                   setShowMenu(false);
                 }}
                 className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                  visibility === false && "font-semibold text-blue-600"
+                  isPublished === false && "font-semibold text-blue-600"
                 }`}
               >
                 🔒 Private
