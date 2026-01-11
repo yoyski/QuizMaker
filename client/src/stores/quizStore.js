@@ -3,6 +3,7 @@ import axios from "axios";
 
 export const useQuizStore = create((set, get) => ({
   quizzes: [],
+  currentQuiz: null,
   loading: false,
 
   getMyQuizzes: async () => {
@@ -36,13 +37,18 @@ export const useQuizStore = create((set, get) => ({
       const res = await axios.get(`/api/quiz/${quizId}`, {
         withCredentials: true,
       });
-      set({ loading: false });
+      set({
+        currentQuiz: res.data,
+        loading: false,
+      });
       return res.data;
     } catch (err) {
       console.error("Failed to fetch quiz by ID:", err);
       throw err;
     }
   },
+
+  clearCurrentQuiz: () => set({ currentQuiz: null }),
 
   updateQuiz: async (quizId, title, questions, isPublished) => {
     set({ loading: true });
@@ -98,10 +104,12 @@ export const useQuizStore = create((set, get) => ({
       await axios.delete(`/api/quiz/${quizId}`, {
         withCredentials: true,
       });
-      const updatedQuizzes = get().quizzes.filter((quiz) => quiz._id !== quizId);
+      const updatedQuizzes = get().quizzes.filter(
+        (quiz) => quiz._id !== quizId
+      );
       set({ quizzes: updatedQuizzes, loading: false });
     } catch (error) {
       console.error("Failed to delete quiz:", error);
     }
-  }
+  },
 }));

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuizStore } from "@/stores/quizStore";
-import { FaTrash, FaEllipsisV, FaTimes, FaBars } from "react-icons/fa";
+import { FaTrash, FaBars, FaTimes, FaGlobe, FaLock } from "react-icons/fa";
 
 const CreateQuizForm = () => {
   const { quizId } = useParams();
@@ -15,14 +15,12 @@ const CreateQuizForm = () => {
   const [title, setTitle] = useState("Untitled Quiz");
   const [isPublished, setIsPublished] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // small device toggle
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [questions, setQuestions] = useState([
     { text: "", options: ["", ""], correctIndex: null },
   ]);
   const [selectedQuestion, setSelectedQuestion] = useState(0);
 
-  /* LOAD QUIZ DATA FOR EDIT MODE */
   useEffect(() => {
     if (isEditMode) {
       setLoading(true);
@@ -36,7 +34,6 @@ const CreateQuizForm = () => {
     }
   }, [quizId, isEditMode, fetchQuizById]);
 
-  /* QUESTION HANDLERS */
   const handleQuestionChange = (index, value) => {
     setQuestions((prev) =>
       prev.map((q, i) => (i === index ? { ...q, text: value } : q))
@@ -84,7 +81,6 @@ const CreateQuizForm = () => {
     setSelectedQuestion(0);
   };
 
-  /* SUBMIT */
   const handleSubmit = async () => {
     if (!title.trim()) {
       alert("Quiz title is required");
@@ -112,98 +108,100 @@ const CreateQuizForm = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* TOGGLE BUTTON FOR SMALL SCREENS */}
+    <div className="flex h-screen bg-gray-50">
+      {/* Mobile Toggle Button */}
       {!sidebarOpen && (
         <button
-          className="sm:hidden fixed top-4 left-4 z-20 p-2 bg-white rounded shadow"
+          className="sm:hidden fixed top-20 left-4 z-20 p-2 bg-white border border-gray-200 rounded-lg shadow-sm"
           onClick={() => setSidebarOpen(true)}
         >
-          <FaBars />
+          <FaBars className="text-gray-600" />
         </button>
       )}
 
-      {/* SIDEBAR */}
+      {/* Sidebar */}
       <aside
         className={`
-          fixed z-10 top-0 left-0 h-full w-72 bg-gray-50 border-r transform
-          transition-transform duration-300
+          fixed z-10 top-0 left-0 h-full w-72 bg-white border-r border-gray-200
+          transform transition-transform duration-300
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          sm:relative sm:translate-x-0 sm:flex flex-col
+          sm:relative sm:translate-x-0 flex flex-col
         `}
       >
-        {/* HEADER */}
-        <div className="px-4 py-3 border-b flex items-center justify-between font-semibold relative">
-          <span>Quiz Questions</span>
+        {/* Header */}
+        <div className="px-4 py-4 border-b border-gray-200 flex items-center justify-between">
+          <span className="font-semibold text-gray-900">Questions</span>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowMenu((prev) => !prev)}
-              className="p-2 rounded hover:bg-gray-200"
+              onClick={() => setShowMenu(!showMenu)}
+              className={`p-2 rounded-lg transition-colors relative ${
+                isPublished ? "text-blue-600 bg-blue-50" : "text-gray-600 hover:bg-gray-100"
+              }`}
             >
-              <FaEllipsisV />
+              {isPublished ? <FaGlobe size={14} /> : <FaLock size={14} />}
             </button>
-            {/* BACK BUTTON ONLY FOR SMALL DEVICES */}
+            
             <button
-              className="sm:hidden p-2 rounded hover:bg-gray-200"
+              className="sm:hidden p-2 rounded-lg hover:bg-gray-100"
               onClick={() => setSidebarOpen(false)}
             >
-              <FaTimes />
+              <FaTimes className="text-gray-600" />
             </button>
           </div>
 
           {showMenu && (
-            <div className="absolute right-3 top-12 bg-white border rounded shadow w-40 z-20">
+            <div className="absolute right-4 top-14 bg-white border border-gray-200 rounded-lg shadow-lg w-40 z-20">
               <button
                 onClick={() => {
                   setIsPublished(true);
                   setShowMenu(false);
                 }}
-                className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                  isPublished === true && "font-semibold text-blue-600"
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${
+                  isPublished && "text-blue-600 bg-blue-50"
                 }`}
               >
-                🌍 Public
+                <FaGlobe size={12} /> Public
               </button>
-
               <button
                 onClick={() => {
                   setIsPublished(false);
                   setShowMenu(false);
                 }}
-                className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                  isPublished === false && "font-semibold text-blue-600"
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${
+                  !isPublished && "text-gray-900 bg-gray-50"
                 }`}
               >
-                🔒 Private
+                <FaLock size={12} /> Private
               </button>
             </div>
           )}
         </div>
 
-        {/* QUESTIONS LIST / SKELETON */}
-        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+        {/* Questions List */}
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
           {loading
             ? [...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-12 bg-gray-300 rounded animate-pulse"
-                />
+                <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
               ))
             : questions.map((q, i) => (
                 <div
                   key={i}
                   onClick={() => {
                     setSelectedQuestion(i);
-                    setSidebarOpen(false); // close sidebar on selection for small screens
+                    setSidebarOpen(false);
                   }}
-                  className={`p-2 rounded cursor-pointer relative ${
-                    selectedQuestion === i ? "bg-blue-100" : "hover:bg-gray-100"
+                  className={`p-3 rounded-lg cursor-pointer relative transition-colors ${
+                    selectedQuestion === i
+                      ? "bg-blue-50 border border-blue-200"
+                      : "bg-gray-50 hover:bg-gray-100 border border-transparent"
                   }`}
                 >
-                  <div className="w-50 truncate">
+                  <div className="pr-8 truncate text-sm font-medium text-gray-900">
                     {q.text || `Question ${i + 1}`}
                   </div>
-                  <div className="text-xs text-gray-500">Question {i + 1}</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {q.options.length} options
+                  </div>
 
                   <button
                     onClick={(e) => {
@@ -211,24 +209,24 @@ const CreateQuizForm = () => {
                       deleteQuestion(i);
                     }}
                     disabled={questions.length === 1}
-                    className={`absolute top-3 right-3 p-2 rounded ${
+                    className={`absolute top-3 right-3 p-1.5 rounded transition-colors ${
                       questions.length === 1
-                        ? "text-gray-400 cursor-not-allowed"
-                        : "text-red-600 hover:bg-red-100"
+                        ? "text-gray-300 cursor-not-allowed"
+                        : "text-gray-400 hover:text-red-600 hover:bg-red-50"
                     }`}
                   >
-                    <FaTrash />
+                    <FaTrash size={12} />
                   </button>
                 </div>
               ))}
         </div>
 
-        {/* ADD QUESTION */}
+        {/* Add Question Button */}
         {!loading && (
-          <div className="p-3 border-t">
+          <div className="p-3 border-t border-gray-200">
             <button
               onClick={addQuestion}
-              className="w-full border border-dashed py-2 text-sm"
+              className="w-full py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               + Add Question
             </button>
@@ -236,72 +234,84 @@ const CreateQuizForm = () => {
         )}
       </aside>
 
-      {/* MAIN */}
-      <main className="flex-1 p-6 overflow-y-auto">
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto p-4 md:p-6">
         {loading ? (
-          <div className="space-y-4">
-            <div className="h-8 w-1/2 bg-gray-300 rounded animate-pulse"></div>
+          <div className="space-y-4 max-w-3xl mx-auto">
+            <div className="h-10 w-1/2 bg-gray-200 rounded animate-pulse" />
             <div className="space-y-2">
-              <div className="h-4 bg-gray-300 rounded w-full animate-pulse"></div>
-              <div className="h-4 bg-gray-300 rounded w-full animate-pulse"></div>
-              <div className="h-4 bg-gray-300 rounded w-5/6 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+              <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+              <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
             </div>
           </div>
         ) : (
-          <>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 p-3 rounded">
+          <div className="max-w-3xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full sm:flex-1 text-2xl font-bold border-b bg-transparent outline-none p-2"
-                placeholder="Enter quiz title"
+                className="flex-1 text-2xl md:text-3xl font-semibold border-b-2 border-transparent hover:border-gray-200 focus:border-blue-500 bg-transparent outline-none pb-2 text-gray-900"
+                placeholder="Quiz title"
               />
-
               <button
                 onClick={handleSubmit}
-                className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded"
+                className="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
               >
-                {isEditMode ? "Update Quiz" : "Save Quiz"}
+                {isEditMode ? "Update" : "Save Quiz"}
               </button>
             </div>
 
+            {/* Question Editor */}
             {questions[selectedQuestion] && (
-              <div className="bg-white p-6 rounded shadow">
-                <input
-                  value={questions[selectedQuestion].text}
-                  onChange={(e) =>
-                    handleQuestionChange(selectedQuestion, e.target.value)
-                  }
-                  className="w-full mb-4 border p-2"
-                  placeholder="Question text"
-                />
+              <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Question {selectedQuestion + 1}
+                  </label>
+                  <input
+                    value={questions[selectedQuestion].text}
+                    onChange={(e) =>
+                      handleQuestionChange(selectedQuestion, e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-blue-500 transition-colors text-gray-900"
+                    placeholder="Enter your question"
+                  />
+                </div>
 
-                {questions[selectedQuestion].options.map((opt, i) => (
-                  <div key={i} className="flex items-center gap-2 mb-2">
-                    <input
-                      type="radio"
-                      checked={questions[selectedQuestion].correctIndex === i}
-                      onChange={() => setCorrectOption(selectedQuestion, i)}
-                    />
-                    <input
-                      value={opt}
-                      onChange={(e) =>
-                        handleOptionChange(selectedQuestion, i, e.target.value)
-                      }
-                      className="flex-1 border p-2"
-                    />
-                  </div>
-                ))}
-
-                <button
-                  onClick={() => addOption(selectedQuestion)}
-                  className="text-sm text-blue-600 mt-2"
-                >
-                  + Add option
-                </button>
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Answer Options
+                  </label>
+                  {questions[selectedQuestion].options.map((opt, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        checked={questions[selectedQuestion].correctIndex === i}
+                        onChange={() => setCorrectOption(selectedQuestion, i)}
+                        className="w-4 h-4 text-blue-600 cursor-pointer"
+                      />
+                      <input
+                        value={opt}
+                        onChange={(e) =>
+                          handleOptionChange(selectedQuestion, i, e.target.value)
+                        }
+                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-blue-500 transition-colors text-gray-900"
+                        placeholder={`Option ${i + 1}`}
+                      />
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addOption(selectedQuestion)}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    + Add option
+                  </button>
+                </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </main>
     </div>

@@ -2,7 +2,7 @@ import Quiz from "../models/Quiz.js";
 
 export const createQuiz = async (req, res) => {
   try {
-    const { title, questions } = req.body;
+    const { title, questions, isPublished } = req.body;
     const { id } = req.user; // from decoded in protect
 
     if (!title) {
@@ -42,6 +42,7 @@ export const createQuiz = async (req, res) => {
       title,
       questions,
       userId: id,
+      isPublished,
     });
 
     await quiz.save();

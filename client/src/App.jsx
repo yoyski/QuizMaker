@@ -8,6 +8,7 @@ import MainLayout from '././components/MainLayout' //
 import MyQuizzes from './pages/MyQuizzes'
 import Favorite from './pages/Favorite'
 import CreateQuizForm from './pages/CreateQuizForm'
+import PlayQuiz from './pages/PlayQuiz'
 
 function App() {
 
@@ -34,6 +35,7 @@ function App() {
         <Route path="/AuthPage" element={<AuthPage />} />
         <Route path="/CreateQuizForm" element={<CreateQuizForm />} />
         <Route path="/CreateQuizForm/:quizId" element={<CreateQuizForm />} />
+        <Route path="/quiz/:quizId" element={<PlayQuiz />} />
       </Routes>
     </>
   )
