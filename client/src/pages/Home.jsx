@@ -9,8 +9,6 @@ const HomePage = () => {
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
-
   const quizzes = useQuizStore((state) => state.quizzes);
   const getAllQuizzes = useQuizStore((state) => state.getAllQuizzes);
   const loading = useQuizStore((state) => state.loading);
@@ -37,15 +35,6 @@ const HomePage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Explore Quizzes</h1>
       </div>
-
-      {isAuthenticated && (
-        <button
-          onClick={logout}
-          className="mb-4 text-sm text-red-500 hover:underline"
-        >
-          Logout
-        </button>
-      )}
 
       {/* SEARCH */}
       <div className="mb-6">

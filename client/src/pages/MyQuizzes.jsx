@@ -14,7 +14,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 const MyQuizzes = () => {
-  const logout = useAuthStore((state) => state.logout);
   const quizzes = useQuizStore((state) => state.quizzes);
   const getMyQuizzes = useQuizStore((state) => state.getMyQuizzes);
   const deleteQuiz = useQuizStore((state) => state.deleteQuiz);
@@ -47,10 +46,6 @@ const MyQuizzes = () => {
           </Button>
         </Link>
       </div>
-
-      <button onClick={logout} className="ml-4 mb-3 text-sm text-red-600">
-        Logout
-      </button>
 
       {/* SEARCH */}
       <div className="p-3">
