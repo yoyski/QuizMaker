@@ -4,7 +4,7 @@ import AuthPage from "./pages/AuthPage";
 import Home from "./pages/Home";
 import { useAuthStore } from "./stores/authStore";
 import { useEffect } from "react";
-import MainLayout from "././components/MainLayout"; //
+import MainLayout from "./components/MainLayout";
 import MyQuizzes from "./pages/MyQuizzes";
 import Favorite from "./pages/Favorite";
 import CreateQuizForm from "./pages/CreateQuizForm";

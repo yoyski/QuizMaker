@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import axios from 'axios';
+import api from '@/lib/api'; // use the instance
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -7,28 +7,41 @@ export const useAuthStore = create((set) => ({
   loading: true,
 
   signup: async (name, email, password) => {
-    await axios.post("api/auth/signup", { name, email, password });
+    try {
+      await api.post("/auth/signup", { name, email, password });
+    } catch (err) {
+      console.error("Signup failed:", err);
+      throw err;
+    }
   },
 
   login: async (email, password) => {
-    const res = await axios.post("/api/auth/login", { email, password }, { withCredentials: true });
-    set({ user: res.data.user, isAuthenticated: true });
+    try {
+      const res = await api.post("/auth/login", { email, password });
+      set({ user: res.data.user, isAuthenticated: true });
+    } catch (err) {
+      console.error("Login failed:", err);
+      throw err;
+    }
   },
 
   logout: async () => {
-    await axios.post("api/auth/logout", {}, { withCredentials: true });
-    set({ user: null, isAuthenticated: false });
+    try {
+      await api.post("/auth/logout");
+      set({ user: null, isAuthenticated: false });
+    } catch (err) {
+      console.error("Logout failed:", err);
+      throw err;
+    }
   },
 
   checkAuth: async () => {
     try {
-      const res = await axios.get("api/auth/me", { withCredentials: true });
+      const res = await api.get("/auth/me");
       set({ user: res.data.user, isAuthenticated: true, loading: false });
-
     } catch (error) {
       set({ user: null, isAuthenticated: false, loading: false });
       console.error("Auth check failed:", error);
     }
   }
-
-}))
+}));
