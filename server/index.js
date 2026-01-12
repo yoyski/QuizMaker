@@ -20,8 +20,8 @@ app.use(
   })
 );
 
-app.use("/api/auth", authRoutes);
-app.use("/api/quiz", quizRoutes);
+app.use("/auth", authRoutes);
+app.use("/quiz", quizRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)
