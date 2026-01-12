@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuizStore } from "@/stores/quizStore";
-import { FaTrash, FaGlobe, FaLock, FaChevronUp, FaChevronDown } from "react-icons/fa";
+import {
+  FaTrash,
+  FaGlobe,
+  FaLock,
+  FaChevronUp,
+  FaChevronDown,
+} from "react-icons/fa";
+import { toast } from "react-hot-toast";
 
 const CreateQuizForm = () => {
   const { quizId } = useParams();
@@ -73,14 +80,14 @@ const CreateQuizForm = () => {
         if (i === qIndex) {
           const newOptions = q.options.filter((_, j) => j !== oIndex);
           let newCorrectIndex = q.correctIndex;
-          
+
           // Adjust correctIndex if needed
           if (q.correctIndex === oIndex) {
             newCorrectIndex = null;
           } else if (q.correctIndex > oIndex) {
             newCorrectIndex = q.correctIndex - 1;
           }
-          
+
           return { ...q, options: newOptions, correctIndex: newCorrectIndex };
         }
         return q;
@@ -103,35 +110,49 @@ const CreateQuizForm = () => {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim()) {
-      alert("Quiz title is required");
+    if (!title.trim() || title === "Untitled Quiz") {
+      toast.dismiss();
+      toast.error("Quiz title is required");
       return;
     }
 
     if (questions.some((q) => !q.text.trim())) {
-      alert("All questions must have text");
+      toast.dismiss();
+      toast.error("All questions must have text");
       return;
     }
 
     if (questions.some((q) => q.options.some((opt) => !opt.trim()))) {
-      alert("All options must have text");
+      toast.dismiss();
+      toast.error("All options must have text");
       return;
     }
-    
+
     if (questions.some((q) => q.correctIndex === null)) {
-      alert("Each question must have a correct answer");
+      toast.dismiss();
+      toast.error("Each question must have a correct answer");
       return;
     }
 
     try {
       if (isEditMode) {
-        await updateQuiz(quizId, title, questions, isPublished);
+        toast.dismiss();
+        await toast.promise(updateQuiz(quizId, title, questions, isPublished), {
+          loading: "Updating quiz...",
+          success: "Quiz updated successfully!",
+          error: "Failed to update quiz",
+        });
       } else {
-        await createQuiz(title, questions, isPublished);
+        toast.dismiss();
+        await toast.promise(createQuiz(title, questions, isPublished), {
+          loading: "Saving quiz...",
+          success: "Quiz created successfully!",
+          error: "Failed to create quiz",
+        });
       }
       navigate("/MyQuizzes");
     } catch (error) {
-      alert("Failed to save quiz", error);
+      console.error(error);
     }
   };
 
@@ -297,7 +318,7 @@ const CreateQuizForm = () => {
               >
                 {isPublished ? <FaGlobe /> : <FaLock />}
               </button>
-              
+
               <button
                 onClick={handleSubmit}
                 className="flex-1 sm:flex-none px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
@@ -368,9 +389,7 @@ const CreateQuizForm = () => {
                       <input
                         type="radio"
                         name="correctOption"
-                        checked={
-                          questions[selectedQuestion].correctIndex === i
-                        }
+                        checked={questions[selectedQuestion].correctIndex === i}
                         onChange={() => setCorrectOption(selectedQuestion, i)}
                         className="w-4 h-4 text-blue-600 cursor-pointer"
                       />
@@ -390,13 +409,19 @@ const CreateQuizForm = () => {
                       <button
                         type="button"
                         onClick={() => deleteOption(selectedQuestion, i)}
-                        disabled={questions[selectedQuestion].options.length <= 2}
+                        disabled={
+                          questions[selectedQuestion].options.length <= 2
+                        }
                         className={`p-2 rounded transition-colors ${
                           questions[selectedQuestion].options.length <= 2
                             ? "text-gray-300 cursor-not-allowed"
                             : "text-gray-400 hover:text-red-600 hover:bg-red-50"
                         }`}
-                        title={questions[selectedQuestion].options.length <= 2 ? "Minimum 2 options required" : "Delete option"}
+                        title={
+                          questions[selectedQuestion].options.length <= 2
+                            ? "Minimum 2 options required"
+                            : "Delete option"
+                        }
                       >
                         <FaTrash />
                       </button>

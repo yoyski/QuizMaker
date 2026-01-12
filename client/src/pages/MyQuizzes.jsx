@@ -8,9 +8,9 @@ import {
   FaGlobe,
   FaLock,
 } from "react-icons/fa";
-import { Button } from "../components/ui/Button";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 const MyQuizzes = () => {
   const quizzes = useQuizStore((state) => state.quizzes);
@@ -25,14 +25,53 @@ const MyQuizzes = () => {
     getMyQuizzes();
   }, [getMyQuizzes]);
 
+  // NEW: handle delete with toast
   const handleDelete = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this quiz?"
-    );
+    // Ask for confirmation with toast
+    toast.dismiss();
+    const confirmDelete = await new Promise((resolve) => {
+      toast(
+        (t) => (
+          <div className="flex flex-col gap-2">
+            <p>Are you sure you want to delete this quiz?</p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  resolve(false);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  resolve(true);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ),
+        { duration: Infinity }
+      );
+    });
 
-    if (!confirmed) return;
+    if (!confirmDelete) return;
 
-    await deleteQuiz(id);
+    try {
+      toast.dismiss();
+      await toast.promise(deleteQuiz(id), {
+        loading: "Deleting quiz...",
+        success: "Quiz deleted successfully!",
+        error: "Failed to delete quiz",
+      });
+    } catch {
+      // already handled by toast.promise
+    }
   };
 
   const filteredQuizzes = quizzes.filter((quiz) =>
@@ -44,7 +83,9 @@ const MyQuizzes = () => {
       {/* HEADER */}
       <div className="max-w-6xl mx-auto mb-8 md:mb-12">
         <div className="flex flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900">My Quizzes</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900">
+            My Quizzes
+          </h1>
           <Link to="/CreateQuizForm">
             <button className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-blue-600 text-white text-sm md:text-base font-medium rounded-lg hover:bg-blue-700 transition-colors">
               <FaPlus size={12} className="md:hidden" />
@@ -56,7 +97,10 @@ const MyQuizzes = () => {
 
         {/* SEARCH */}
         <div className="relative">
-          <FaSearch className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+          <FaSearch
+            className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-gray-400"
+            size={14}
+          />
           <input
             type="text"
             placeholder="Search your quizzes..."
@@ -70,7 +114,6 @@ const MyQuizzes = () => {
       {/* QUIZ GRID / SKELETON */}
       <div className="max-w-6xl mx-auto">
         {loading ? (
-          /* SKELETON GRID */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
               <div
@@ -82,7 +125,6 @@ const MyQuizzes = () => {
                     <div className="h-6 w-40 bg-gray-200 rounded" />
                     <div className="h-5 w-16 bg-gray-200 rounded-full" />
                   </div>
-
                   <div className="h-4 w-28 bg-gray-200 rounded mb-2" />
                   <div className="h-3 w-36 bg-gray-100 rounded" />
                 </div>
@@ -96,7 +138,6 @@ const MyQuizzes = () => {
             ))}
           </div>
         ) : (
-          /* REAL QUIZZES */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredQuizzes.map((quiz) => (
               <div

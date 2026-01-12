@@ -1,31 +1,31 @@
-import './App.css'
-import { Routes, Route } from 'react-router-dom'
-import AuthPage from './pages/AuthPage'
-import Home from './pages/Home'
-import { useAuthStore } from './stores/authStore'
-import { useEffect } from 'react'
-import MainLayout from '././components/MainLayout' //
-import MyQuizzes from './pages/MyQuizzes'
-import Favorite from './pages/Favorite'
-import CreateQuizForm from './pages/CreateQuizForm'
-import PlayQuiz from './pages/PlayQuiz'
+import "./App.css";
+import { Routes, Route } from "react-router-dom";
+import AuthPage from "./pages/AuthPage";
+import Home from "./pages/Home";
+import { useAuthStore } from "./stores/authStore";
+import { useEffect } from "react";
+import MainLayout from "././components/MainLayout"; //
+import MyQuizzes from "./pages/MyQuizzes";
+import Favorite from "./pages/Favorite";
+import CreateQuizForm from "./pages/CreateQuizForm";
+import PlayQuiz from "./pages/PlayQuiz";
+import { Toaster } from "react-hot-toast";
 
 function App() {
-
-  const checkAuth = useAuthStore(state => state.checkAuth);
-  const loading = useAuthStore(state => state.loading);
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const loading = useAuthStore((state) => state.loading);
 
   useEffect(() => {
-    
-    checkAuth(); 
+    checkAuth();
   }, [checkAuth]);
 
   if (loading) {
-    return <div>Loading...</div>; 
+    return <div>Loading...</div>;
   }
 
   return (
     <>
+      <Toaster position="top-center" reverseOrder={false} toastOptions={{ duration: 1000 }} />
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
@@ -38,8 +38,7 @@ function App() {
         <Route path="/quiz/:quizId" element={<PlayQuiz />} />
       </Routes>
     </>
-  )
+  );
 }
 
-
-export default App
+export default App;

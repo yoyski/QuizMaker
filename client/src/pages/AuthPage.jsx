@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useAuthStore } from "../stores/authStore";
 import { Navigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const AuthPages = () => {
   const signup = useAuthStore((state) => state.signup);
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   const [isLogin, setIsLogin] = useState(true);
-  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -26,24 +27,31 @@ const AuthPages = () => {
 
     if (isLogin) {
       try {
-        await login(email, password);
-      } catch (error) {
-        setError(
-          error.response?.data?.message ||
-            "Something went wrong. Please try again."
-        );
+        toast.dismiss();
+        await toast.promise(login(email, password), {
+          loading: "Signing in...",
+          error: (err) =>
+            err.response?.data?.message ||
+            "Invalid email or password",
+        });
+      } catch {
+        // handled by toast
       }
     } else {
       try {
-        await signup(name, email, password);
+        toast.dismiss();
+        await toast.promise(signup(name, email, password), {
+          loading: "Creating account...",
+          success: "Account created! Please sign in.",
+          error: (err) =>
+            err.response?.data?.message ||
+            "Signup failed. Try again.",
+        });
+
         setIsLogin(true);
-        setFormData({ email: "", password: "" });
-        setError("");
-      } catch (error) {
-        setError(
-          error.response?.data?.message ||
-            "Something went wrong. Please try again."
-        );
+        setFormData({ name: "", email: "", password: "" });
+      } catch {
+        // handled by toast
       }
     }
   };
@@ -74,7 +82,6 @@ const AuthPages = () => {
               onClick={() => {
                 setIsLogin(false);
                 setFormData({ name: "", email: "", password: "" });
-                setError("");
               }}
             >
               Sign Up
@@ -88,7 +95,6 @@ const AuthPages = () => {
               onClick={() => {
                 setIsLogin(true);
                 setFormData({ name: "", email: "", password: "" });
-                setError("");
               }}
             >
               Sign In
@@ -110,7 +116,7 @@ const AuthPages = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-blue-500 transition-colors text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
                 />
               </div>
             )}
@@ -127,7 +133,7 @@ const AuthPages = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-blue-500 transition-colors text-gray-900"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
               />
             </div>
 
@@ -143,15 +149,9 @@ const AuthPages = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-blue-500 transition-colors text-gray-900"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:border-blue-500"
               />
             </div>
-
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
 
             <button
               type="submit"
