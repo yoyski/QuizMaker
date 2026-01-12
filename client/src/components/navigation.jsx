@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { useState } from "react";
 import { useAuthStore } from "../stores/authStore";
+import logo from "../assets/logo.png";
 
 export const Navigation = () => {
   const [isSettingOn, setIsSettingOn] = useState(false);
@@ -21,12 +22,14 @@ export const Navigation = () => {
      ${isActive ? "text-blue-600" : "text-gray-600 hover:text-gray-900"}`;
 
   return (
-    <nav className="fixed top-0 left-0 w-full flex items-center justify-between px-6 md:px-10 h-16 border-b border-gray-200 bg-white z-40">
+    <nav className="fixed top-0 left-0 w-full flex items-center justify-between px-4 md:px-10 h-16 border-b border-gray-200 bg-white z-40">
       {/* LEFT — LOGO */}
       <div className="flex items-center">
         <div className="font-semibold text-xl text-gray-900">
           <span className="hidden md:inline">QuizMaker</span>
-          <span className="md:hidden">Q</span>
+          <span className="md:hidden">
+            <img src={logo} alt="App Logo" className=" h-9 rounded-full" />
+          </span>
         </div>
       </div>
 
