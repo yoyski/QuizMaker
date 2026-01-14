@@ -23,7 +23,7 @@ const HomePage = () => {
     "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 md:px-10 lg:px-20 py-12 md:mt-5 mt-9">
+    <div className="min-h-screen bg-red-500 px-4 md:px-10 lg:px-20 py-12 md:mt-5 mt-9">
       {/* HEADER */}
       <div className="max-w-4xl mx-auto mb-12">
         <h1 className="md:text-3xl font-semibold text-gray-900 mb-8 text-xl">Explore Quizzes</h1>
