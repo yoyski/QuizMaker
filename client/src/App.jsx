@@ -10,6 +10,7 @@ import Favorite from "./pages/Favorite";
 import CreateQuizForm from "./pages/CreateQuizForm";
 import PlayQuiz from "./pages/PlayQuiz";
 import { Toaster } from "react-hot-toast";
+import LoadingOverlay from "./components/LoadingOverlay";
 
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -23,6 +24,10 @@ function App() {
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} toastOptions={{ duration: 1000 }} />
+      
+      {/* Show loading overlay while checking auth */}
+      {loading && <LoadingOverlay />}
+      
       <Routes>
         {/* Public Route - Redirect to home if already authenticated */}
         <Route 
