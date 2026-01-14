@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from '@/lib/api';
+import api from '@/lib/api'; // use the instance
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -18,7 +18,6 @@ export const useAuthStore = create((set) => ({
   login: async (email, password) => {
     try {
       const res = await api.post("/auth/login", { email, password });
-      console.log("✅ Login success:", res.data.user);
       set({ user: res.data.user, isAuthenticated: true });
     } catch (err) {
       console.error("Login failed:", err);
@@ -27,27 +26,23 @@ export const useAuthStore = create((set) => ({
   },
 
   logout: async () => {
-    console.log("🚪 Logout called");
     try {
       await api.post("/auth/logout");
-      console.log("✅ Logout API success");
     } catch (err) {
-      console.error("❌ Logout API failed:", err);
+      console.error("Logout failed:", err);
     } finally {
-      console.log("🔄 Clearing auth state");
+      // Always clear state, even if API call fails
       set({ user: null, isAuthenticated: false });
     }
   },
 
   checkAuth: async () => {
-    console.log("🔍 Checking auth...");
     try {
       const res = await api.get("/auth/me");
-      console.log("✅ Auth check passed:", res.data.user);
       set({ user: res.data.user, isAuthenticated: true, loading: false });
     } catch (error) {
-      console.log("❌ Auth check failed - no valid token");
       set({ user: null, isAuthenticated: false, loading: false });
+      console.error("Auth check failed:", error);
     }
   }
 }));

@@ -31,9 +31,9 @@ const AuthPages = () => {
         await toast.promise(login(email, password), {
           loading: "Signing in...",
           error: (err) =>
-            err.response?.data?.message ||
-            "Invalid email or password",
+            err.response?.data?.message || "Invalid email or password",
         });
+        setFormData({ name: "", email: "", password: "" });
       } catch {
         // handled by toast
       }
@@ -44,8 +44,7 @@ const AuthPages = () => {
           loading: "Creating account...",
           success: "Account created! Please sign in.",
           error: (err) =>
-            err.response?.data?.message ||
-            "Signup failed. Try again.",
+            err.response?.data?.message || "Signup failed. Try again.",
         });
 
         setIsLogin(true);
