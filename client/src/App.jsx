@@ -20,10 +20,6 @@ function App() {
     checkAuth();
   }, [checkAuth]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} toastOptions={{ duration: 1000 }} />
