@@ -1,5 +1,5 @@
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import AuthPage from "./pages/AuthPage";
 import Home from "./pages/Home";
 import { useAuthStore } from "./stores/authStore";
@@ -14,6 +14,7 @@ import { Toaster } from "react-hot-toast";
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const loading = useAuthStore((state) => state.loading);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     checkAuth();
@@ -27,15 +28,32 @@ function App() {
     <>
       <Toaster position="top-center" reverseOrder={false} toastOptions={{ duration: 1000 }} />
       <Routes>
+        {/* Public Route - Redirect to home if already authenticated */}
+        <Route 
+          path="/AuthPage" 
+          element={isAuthenticated ? <Navigate to="/" replace /> : <AuthPage />} 
+        />
+
+        {/* Protected Routes - MainLayout already checks auth */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />
           <Route path="/MyQuizzes" element={<MyQuizzes />} />
           <Route path="/Favorite" element={<Favorite />} />
         </Route>
-        <Route path="/AuthPage" element={<AuthPage />} />
-        <Route path="/CreateQuizForm" element={<CreateQuizForm />} />
-        <Route path="/CreateQuizForm/:quizId" element={<CreateQuizForm />} />
-        <Route path="/quiz/:quizId" element={<PlayQuiz />} />
+
+        {/* Other Protected Routes */}
+        <Route 
+          path="/CreateQuizForm" 
+          element={isAuthenticated ? <CreateQuizForm /> : <Navigate to="/AuthPage" replace />} 
+        />
+        <Route 
+          path="/CreateQuizForm/:quizId" 
+          element={isAuthenticated ? <CreateQuizForm /> : <Navigate to="/AuthPage" replace />} 
+        />
+        <Route 
+          path="/quiz/:quizId" 
+          element={isAuthenticated ? <PlayQuiz /> : <Navigate to="/AuthPage" replace />} 
+        />
       </Routes>
     </>
   );
