@@ -1,10 +1,11 @@
 import { create } from 'zustand';
-import api from '@/lib/api'; // use the instance
+import api from '@/lib/api';
 
 export const useAuthStore = create((set) => ({
   user: null,
   isAuthenticated: false,
   loading: true,
+  isInitialLoad: true, // NEW: Track if it's the first load
 
   signup: async (name, email, password) => {
     try {
@@ -31,7 +32,6 @@ export const useAuthStore = create((set) => ({
     } catch (err) {
       console.error("Logout failed:", err);
     } finally {
-      // Always clear state, even if API call fails
       set({ user: null, isAuthenticated: false });
     }
   },
@@ -39,10 +39,19 @@ export const useAuthStore = create((set) => ({
   checkAuth: async () => {
     try {
       const res = await api.get("/auth/me");
-      set({ user: res.data.user, isAuthenticated: true, loading: false });
+      set({ 
+        user: res.data.user, 
+        isAuthenticated: true, 
+        loading: false,
+        isInitialLoad: false // No longer initial load
+      });
     } catch (error) {
-      set({ user: null, isAuthenticated: false, loading: false });
-      console.error("Auth check failed:", error);
+      set({ 
+        user: null, 
+        isAuthenticated: false, 
+        loading: false,
+        isInitialLoad: false // No longer initial load
+      });
     }
   }
 }));

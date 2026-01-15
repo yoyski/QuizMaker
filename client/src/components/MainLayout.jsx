@@ -7,7 +7,7 @@ const MainLayout = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const loading = useAuthStore((state) => state.loading);
 
-  // Don't redirect while loading (let App.jsx handle the overlay)
+  // Show layout while loading (overlay will appear on top)
   if (loading) {
     return (
       <>
@@ -15,7 +15,6 @@ const MainLayout = () => {
         <main>
           <Outlet />
         </main>
-        <footer>{/* Optional Footer */}</footer>
       </>
     );
   }
