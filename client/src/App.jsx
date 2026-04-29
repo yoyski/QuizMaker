@@ -18,15 +18,15 @@ const MainLayout = lazy(() => import("./components/MainLayout"));
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const loading = useAuthStore((state) => state.loading);
-  const isInitialLoad = useAuthStore((state) => state.isInitialLoad);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
+  // ✅ FIX: run only once
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+  }, []); // ❌ removed dependency
 
-  // Full screen loading on initial app load
-  if (isInitialLoad && loading) {
+  // ✅ SINGLE SOURCE OF TRUTH (important fix)
+  if (loading) {
     return <LoadingScreen />;
   }
 
@@ -38,10 +38,9 @@ function App() {
         toastOptions={{ duration: 1000 }}
       />
 
-      {/* Overlay for subsequent loads */}
-      {!isInitialLoad && loading && <LoadingOverlay />}
+      {/* Optional overlay (only when NOT initial load) */}
+      {!loading && <LoadingOverlay />}
 
-      {/* Wrap lazy-loaded routes in Suspense */}
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           {/* Public Route */}
@@ -59,6 +58,7 @@ function App() {
             <Route path="/Favorite" element={<Favorite />} />
           </Route>
 
+          {/* Protected Pages */}
           <Route
             path="/CreateQuizForm"
             element={
@@ -69,6 +69,7 @@ function App() {
               )
             }
           />
+
           <Route
             path="/CreateQuizForm/:quizId"
             element={
@@ -79,6 +80,7 @@ function App() {
               )
             }
           />
+
           <Route
             path="/quiz/:quizId"
             element={
