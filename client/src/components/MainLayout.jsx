@@ -4,22 +4,18 @@ import { useAuthStore } from "../stores/authStore";
 import { Navigation } from "./navigation";
 
 const MainLayout = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const loading = useAuthStore((state) => state.loading);
+  const { isAuthenticated, loading } = useAuthStore();
 
-  // Show layout while loading (overlay will appear on top)
+  // ✅ Proper loading screen
   if (loading) {
     return (
-      <>
-        <Navigation />
-        <main>
-          <Outlet />
-        </main>
-      </>
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        Loading...
+      </div>
     );
   }
 
-  // Redirect if not logged in
+  // ✅ Redirect if not logged in
   if (!isAuthenticated) {
     return <Navigate to="/AuthPage" replace />;
   }
@@ -30,7 +26,6 @@ const MainLayout = () => {
       <main>
         <Outlet />
       </main>
-      <footer>{/* Optional Footer */}</footer>
     </>
   );
 };
