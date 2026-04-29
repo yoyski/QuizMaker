@@ -17,75 +17,40 @@ const MainLayout = lazy(() => import("./components/MainLayout"));
 
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
-  const loading = useAuthStore((state) => state.loading);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  // ✅ FIX: run only once
   useEffect(() => {
     checkAuth();
-  }, []); // ❌ removed dependency
+  }, []);
 
-  // ✅ SINGLE SOURCE OF TRUTH (important fix)
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
+  // 🔥 TEMP FIX: DON'T BLOCK UI
   return (
     <>
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{ duration: 1000 }}
-      />
+      <Toaster position="top-center" />
 
-      {/* Optional overlay (only when NOT initial load) */}
-      {!loading && <LoadingOverlay />}
-
-      <Suspense fallback={<LoadingScreen />}>
+      <Suspense fallback={<div>Loading page...</div>}>
         <Routes>
-          {/* Public Route */}
           <Route
             path="/AuthPage"
             element={
-              isAuthenticated ? <Navigate to="/" replace /> : <AuthPage />
+              isAuthenticated ? <Navigate to="/" /> : <AuthPage />
             }
           />
 
-          {/* Protected Routes */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
             <Route path="/MyQuizzes" element={<MyQuizzes />} />
             <Route path="/Favorite" element={<Favorite />} />
           </Route>
 
-          {/* Protected Pages */}
           <Route
             path="/CreateQuizForm"
-            element={
-              isAuthenticated ? (
-                <CreateQuizForm />
-              ) : (
-                <Navigate to="/AuthPage" replace />
-              )
-            }
-          />
-
-          <Route
-            path="/CreateQuizForm/:quizId"
-            element={
-              isAuthenticated ? (
-                <CreateQuizForm />
-              ) : (
-                <Navigate to="/AuthPage" replace />
-              )
-            }
+            element={<CreateQuizForm />}
           />
 
           <Route
             path="/quiz/:quizId"
-            element={
-              isAuthenticated ? <PlayQuiz /> : <Navigate to="/AuthPage" replace />
-            }
+            element={<PlayQuiz />}
           />
         </Routes>
       </Suspense>
